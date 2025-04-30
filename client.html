@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Панель клиента</h2>
+
+<div class="row">
+    <!-- Левая панель: профиль, расписание и запись -->
+    <div class="col-md-6">
+        <!-- Мой профиль -->
+        <div class="card mb-4">
+            <div class="card-header">Мой профиль</div>
+            <div class="card-body">
+                <button class="btn btn-primary" onclick="showClientProfile()">Показать</button>
+                <table id="client-profile-table" class="table table-bordered mt-3">
+                    <tbody>
+                        <tr><td>Имя</td><td><input type="text" id="client-firstname" class="form-control"></td></tr>
+                        <tr><td>Фамилия</td><td><input type="text" id="client-lastname" class="form-control"></td></tr>
+                        <tr><td>Телефон</td><td><input type="text" id="client-phonenumber" class="form-control"></td></tr>
+                        <tr><td>Дата рождения</td><td><input type="date" id="client-dob" class="form-control"></td></tr>
+                        <tr><td>Мед.записи</td><td><input type="text" id="client-medicalrecords" class="form-control"></td></tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-success mt-2" onclick="updateClientProfile()">Сохранить</button>
+            </div>
+        </div>
+
+
+        <div class="card mb-4">
+            <div class="card-header">Записаться на тренировку</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="trainer-select" class="form-label">Выберите тренера</label>
+                    <select id="trainer-select" class="form-select"></select>
+                </div>
+                <button class="btn btn-primary mb-3" onclick="showTrainerSchedule()">Показать расписание</button>
+                <table id="trainer-schedule-table" class="table table-bordered">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+                <div class="mb-3">
+                    <label for="client-id" class="form-label">Ваш ID</label>
+                    <input type="text" class="form-control" id="client-id" value="{{ client_id }}" readonly>
+                </div>
+                <button class="btn btn-success" onclick="signUpForTraining()">Записаться</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Мои достижения</div>
+            <div class="card-body">
+                <button class="btn btn-primary" onclick="showAchievements()">Показать</button>
+                <table id="achievements-table" class="table table-bordered mt-3">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая панель: мое расписание, задания и заметки -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Мое расписание</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="schedule-client-id" class="form-label">Ваш ID</label>
+                    <input type="text" class="form-control" id="schedule-client-id" value="{{ client_id }}" readonly>
+                </div>
+                <button class="btn btn-primary" onclick="showClientSchedule()">Показать</button>
+                <table id="client-schedule-table" class="table table-bordered mt-3">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Мои задания</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="assignments-client-id" class="form-label">Ваш ID</label>
+                    <input type="text" class="form-control" id="assignments-client-id" value="{{ client_id }}" readonly>
+                </div>
+                <button class="btn btn-primary" onclick="showAssignments()">Показать</button>
+                <table id="assignments-table" class="table table-bordered mt-3">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+                <button class="btn btn-success mt-3" onclick="markAsCompleted()">Отметить выполненным</button>
+            </div>
+        </div>
+
+        <!-- Новый раздел: Мои заметки и чек-лист -->
+        <div class="card">
+            <div class="card-header">Мои заметки и чек-лист</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="new-task-entry" class="form-label">Новая задача</label>
+                    <input type="text" class="form-control" id="new-task-entry" placeholder="Введите задачу">
+                </div>
+                <button class="btn btn-success" onclick="addTask()">Сохранить</button>
+                <ul id="task-list" class="list-group mt-3"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функции для работы с заметками и чек-листом
+function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem(`tasks_${document.getElementById('client-id').value}`)) || [];
+    const taskList = document.getElementById('task-list');
+    taskList.innerHTML = '';
+
+    tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+            <div>
+                <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="updateTask(${task.id}, this.checked)">
+                <span style="margin-left: 10px; ${task.completed ? 'text-decoration: line-through;' : ''}">${task.name}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Удалить</button>
+        `;
+        taskList.appendChild(li);
+    });
+}
+
+function addTask() {
+    const taskName = document.getElementById('new-task-entry').value.trim();
+    if (!taskName) return alert('Введите название задачи!');
+
+    const tasks = JSON.parse(localStorage.getItem(`tasks_${document.getElementById('client-id').value}`)) || [];
+    const newTask = {
+        id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+        name: taskName,
+        completed: false
+    };
+    tasks.push(newTask);
+    localStorage.setItem(`tasks_${document.getElementById('client-id').value}`, JSON.stringify(tasks));
+    document.getElementById('new-task-entry').value = '';
+    loadTasks();
+}
+
+function updateTask(taskId, completed) {
+    const tasks = JSON.parse(localStorage.getItem(`tasks_${document.getElementById('client-id').value}`)) || [];
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = completed;
+        localStorage.setItem(`tasks_${document.getElementById('client-id').value}`, JSON.stringify(tasks));
+        loadTasks();
+    }
+}
+
+function deleteTask(taskId) {
+    const tasks = JSON.parse(localStorage.getItem(`tasks_${document.getElementById('client-id').value}`)) || [];
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    localStorage.setItem(`tasks_${document.getElementById('client-id').value}`, JSON.stringify(updatedTasks));
+    loadTasks();
+}
+
+// Загружаем задачи при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadTasks);
+
+// Остальные функции страницы клиента
+async function showClientProfile() {
+    const clientId = document.getElementById('client-id').value;
+    try {
+        const response = await fetch(`/client_profile/${clientId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        // Заполнение полей ввода
+        document.getElementById('client-firstname').value = data.firstname || '';
+        document.getElementById('client-lastname').value = data.lastname || '';
+        document.getElementById('client-phonenumber').value = data.phonenumber || '';
+        document.getElementById('client-dob').value = data.dob || '';
+        document.getElementById('client-medicalrecords').value = data.medicalrecords || '';
+    } catch (err) {
+        alert('Ошибка загрузки профиля');
+    }
+}
+
+async function updateClientProfile() {
+    const clientId = document.getElementById('client-id').value;
+
+    const payload = {
+        firstname: document.getElementById('client-firstname').value,
+        lastname: document.getElementById('client-lastname').value,
+        phonenumber: document.getElementById('client-phonenumber').value,
+        dob: document.getElementById('client-dob').value,
+        medicalrecords: document.getElementById('client-medicalrecords').value
+    };
+
+    try {
+        const response = await fetch(`/client_profile/${clientId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.error) return alert(result.error);
+        alert('Профиль обновлён!');
+    } catch (err) {
+        alert('Ошибка при обновлении профиля');
+    }
+}
+
+async function loadTrainers() {
+    try {
+        const response = await fetch('/trainers');
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const select = document.getElementById('trainer-select');
+        select.innerHTML = '<option value="">-- Выберите --</option>';
+        data.forEach(trainer => {
+            const option = document.createElement('option');
+            option.value = trainer.trainerid;
+            option.textContent = `${trainer.trainerid} - ${trainer.lastname}`;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки тренеров');
+    }
+}
+loadTrainers();
+
+async function showTrainerSchedule() {
+    const trainerId = document.getElementById('trainer-select').value;
+    if (!trainerId) return alert('Выберите тренера');
+
+    try {
+        const response = await fetch('/trainer_schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trainer_id: trainerId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('trainer-schedule-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Дата</th><th>Время</th><th>Статус</th><th>Локация</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.dataset.scheduleId = row.ID;
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Дата}</td><td>${row.Время}</td><td>${row.Статус}</td><td>${row.Локация}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки расписания');
+    }
+}
+
+async function signUpForTraining() {
+    const selectedRow = document.querySelector('#trainer-schedule-table tbody tr.selected');
+    if (!selectedRow) return alert('Выберите тренировку');
+
+    const scheduleId = selectedRow.dataset.scheduleId;
+    const status = selectedRow.children[3].textContent;
+    const clientId = document.getElementById('client-id').value;
+
+    if (status !== 'Свободно') return alert('Тренировка уже занята');
+
+    try {
+        const response = await fetch('/sign_up_for_training', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule_id: scheduleId, client_id: clientId, status })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) showTrainerSchedule();
+    } catch (err) {
+        alert('Ошибка записи на тренировку');
+    }
+}
+
+async function showClientSchedule() {
+    const clientId = document.getElementById('schedule-client-id').value;
+    try {
+        const response = await fetch('/show_client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('client-schedule-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Дата</th><th>Время</th><th>Тренер</th><th>Локация</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Дата}</td><td>${row.Время}</td><td>${row.Тренер}</td><td>${row.Локация}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки расписания');
+    }
+}
+
+async function showAssignments() {
+    const clientId = document.getElementById('assignments-client-id').value;
+    try {
+        const response = await fetch('/show_assignments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('assignments-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Задание</th><th>Дата</th><th>Статус</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.dataset.assignmentId = row.ID;
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Задание}</td><td>${row.Дата}</td><td>${row.Статус ? 'Выполнено' : 'Не выполнено'}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки заданий');
+    }
+}
+
+async function markAsCompleted() {
+    const selectedRow = document.querySelector('#assignments-table tbody tr.selected');
+    if (!selectedRow) return alert('Выберите задачу');
+
+    const assignmentId = selectedRow.dataset.assignmentId;
+    try {
+        const response = await fetch('/mark_as_completed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assignment_id: assignmentId })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) showAssignments();
+    } catch (err) {
+        alert('Ошибка отметки задания');
+    }
+}
+
+async function showAchievements() {
+    const clientId = document.getElementById('client-id').value;
+    try {
+        const response = await fetch('/client_achievements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('achievements-table');
+        table.querySelector('thead').innerHTML = '<tr><th>Название</th><th>Дата</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.AchievementName}</td><td>${row.DateEarned}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки достижений');
+    }
+}
+
+// Выделение строк таблицы
+document.querySelectorAll('table').forEach(table => {
+    table.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        row.parentElement.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+    });
+});
+</script>
+{% endblock %}

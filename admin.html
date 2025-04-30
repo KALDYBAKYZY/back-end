@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Панель администратора</h2>
+
+<div class="row">
+    <!-- Левая панель: выбор действий -->
+    <div class="col-md-3">
+        <div class="list-group">
+            <button class="list-group-item list-group-item-action active" onclick="showSection('tables')">Просмотр таблиц</button>
+            <button class="list-group-item list-group-item-action" onclick="showSection('clients')">Работа с клиентами</button>
+            <button class="list-group-item list-group-item-action" onclick="showSection('trainers')">Работа с тренерами</button>
+            <button class="list-group-item list-group-item-action" onclick="showSection('memberships')">Работа с абонементами</button>
+        </div>
+    </div>
+
+    <!-- Правая панель: контент -->
+    <div class="col-md-9">
+        <!-- Просмотр таблиц -->
+        <div id="tables-section">
+            <h4>Просмотр таблиц</h4>
+            <div class="mb-3">
+                <label for="table-select" class="form-label">Выберите таблицу</label>
+                <select id="table-select" class="form-select">
+                    <option value="">-- Выберите --</option>
+                    <option value="clients">Клиенты</option>
+                    <option value="trainers">Тренеры</option>
+                    <option value="classes">Занятия</option>
+                    <option value="membershiptypes">Типы абонементов</option>
+                    <option value="memberships">Абонементы</option>
+                    <option value="payments">Платежи</option>
+                </select>
+                <button class="btn btn-primary mt-2" onclick="displayTable()">Показать</button>
+            </div>
+            <table id="data-table" class="table table-bordered">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Работа с клиентами -->
+        <div id="clients-section" style="display: none;">
+            <h4>Работа с клиентами</h4>
+            <!-- Добавить клиента -->
+            <form id="add-client-form" class="mb-4">
+                <h5>Добавить клиента</h5>
+                <div class="mb-3">
+                    <label for="client-id" class="form-label">ID клиента</label>
+                    <input type="text" class="form-control" id="client-id" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-first-name" class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="client-first-name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-last-name" class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="client-last-name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-phone" class="form-label">Телефон</label>
+                    <input type="text" class="form-control" id="client-phone" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-dob" class="form-label">Дата рождения</label>
+                    <input type="date" class="form-control" id="client-dob" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-medical-records" class="form-label">Медицинские показатели</label>
+                    <input type="text" class="form-control" id="client-medical-records" required>
+                </div>
+                <div class="mb-3">
+                    <label for="client-password" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="client-password" required>
+                </div>
+                <button type="submit" class="btn btn-success">Добавить</button>
+            </form>
+
+            <!-- Обновить клиента -->
+            <form id="update-client-form" class="mb-4">
+                <h5>Обновить клиента</h5>
+                <div class="mb-3">
+                    <label for="update-client-id" class="form-label">ID клиента</label>
+                    <input type="text" class="form-control" id="update-client-id" required>
+                </div>
+                <div class="mb-3">
+                    <label for="update-first-name" class="form-label">Новое имя</label>
+                    <input type="text" class="form-control" id="update-first-name">
+                </div>
+                <div class="mb-3">
+                    <label for="update-last-name" class="form-label">Новая фамилия</label>
+                    <input type="text" class="form-control" id="update-last-name">
+                </div>
+                <div class="mb-3">
+                    <label for="update-phone" class="form-label">Новый телефон</label>
+                    <input type="text" class="form-control" id="update-phone">
+                </div>
+                <div class="mb-3">
+                    <label for="update-password" class="form-label">Новый пароль</label>
+                    <input type="password" class="form-control" id="update-password">
+                </div>
+                <button type="submit" class="btn btn-warning">Обновить</button>
+            </form>
+
+            <!-- Удалить клиента -->
+            <form id="delete-client-form">
+                <h5>Удалить клиента</h5>
+                <div class="mb-3">
+                    <label for="delete-client-id" class="form-label">ID клиента</label>
+                    <input type="text" class="form-control" id="delete-client-id" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+        </div>
+
+        <!-- Работа с тренерами -->
+        <div id="trainers-section" style="display: none;">
+            <h4>Работа с тренерами</h4>
+            <form id="trainers-for-class-form">
+                <div class="mb-3">
+                    <label for="class-name" class="form-label">Название занятия</label>
+                    <select id="class-name" class="form-select">
+                        <option value="">-- Выберите --</option>
+                        <option>Йога для начинающих</option>
+                        <option>Аэробика вечерняя</option>
+                        <option>Силовые тренировки</option>
+                        <option>Утренний фитнес</option>
+                        <option>Кроссфит интенсив</option>
+                        <option>Кардио микс</option>
+                        <option>Утренняя растяжка</option>
+                        <option>Танцевальный фитнес</option>
+                        <option>Йога и релакс</option>
+                        <!-- Другие опции из вашего кода -->
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Показать тренеров</button>
+            </form>
+            <table id="trainers-table" class="table table-bordered mt-3">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Работа с абонементами -->
+        <div id="memberships-section" style="display: none;">
+            <h4>Работа с абонементами</h4>
+            <button class="btn btn-info mb-3" onclick="getAveragePrice()">Средняя цена абонемента</button>
+            <form id="search-membership-form" class="mb-3">
+                <div class="mb-3">
+                    <label for="membership-name" class="form-label">Название абонемента</label>
+                    <input type="text" class="form-control" id="membership-name">
+                </div>
+                <button type="submit" class="btn btn-primary">Найти</button>
+            </form>
+            <button class="btn btn-secondary mb-3" onclick="orderByPrice()">Сортировать по цене</button>
+            <table id="memberships-table" class="table table-bordered">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+    document.querySelectorAll('.col-md-9 > div').forEach(div => div.style.display = 'none');
+    document.getElementById(`${sectionId}-section`).style.display = 'block';
+    document.querySelectorAll('.list-group-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`button[onclick="showSection('${sectionId}')"]`).classList.add('active');
+}
+
+async function displayTable() {
+    const tableName = document.getElementById('table-select').value;
+    if (!tableName) return alert('Выберите таблицу');
+    try {
+        const response = await fetch(`/table/${tableName}`);
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('data-table');
+        table.querySelector('thead').innerHTML = '';
+        table.querySelector('tbody').innerHTML = '';
+
+        if (data.length === 0) return alert('Таблица пуста');
+
+        const headers = Object.keys(data[0]);
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        table.querySelector('thead').appendChild(headerRow);
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            headers.forEach(header => {
+                const td = document.createElement('td');
+                td.textContent = row[header] || '—';
+                tr.appendChild(td);
+            });
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки таблицы');
+    }
+}
+
+// Добавить клиента
+document.getElementById('add-client-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('client-id').value.trim();
+    const firstName = document.getElementById('client-first-name').value.trim();
+    const lastName = document.getElementById('client-last-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const password = document.getElementById('client-password').value.trim();
+    const dob = document.getElementById('client-dob').value.trim();
+    const medicalrecords = document.getElementById('client-medical-records').value.trim();
+
+
+
+    try {
+        const response = await fetch('/add_client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: clientId,
+                first_name: firstName,
+                last_name: lastName,
+                phone,
+                password,
+                dob,
+                medicalrecords
+
+            })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) {
+            document.getElementById('add-client-form').reset();
+            displayTable(); // Обновить таблицу клиентов
+        }
+    } catch (err) {
+        alert('Ошибка добавления клиента');
+    }
+});
+
+// Обновить клиента
+document.getElementById('update-client-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('update-client-id').value.trim();
+    const firstName = document.getElementById('update-first-name').value.trim();
+    const lastName = document.getElementById('update-last-name').value.trim();
+    const phone = document.getElementById('update-phone').value.trim();
+    const password = document.getElementById('update-password').value.trim();
+
+    try {
+        const response = await fetch('/update_client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: clientId,
+                new_first_name: firstName,
+                new_last_name: lastName,
+                new_phone: phone,
+                new_password: password
+            })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) {
+            document.getElementById('update-client-form').reset();
+            displayTable();
+        }
+    } catch (err) {
+        alert('Ошибка обновления клиента');
+    }
+});
+
+// Удалить клиента
+document.getElementById('delete-client-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('delete-client-id').value.trim();
+
+    try {
+        const response = await fetch('/delete_client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) {
+            document.getElementById('delete-client-form').reset();
+            displayTable();
+        }
+    } catch (err) {
+        alert('Ошибка удаления клиента');
+    }
+});
+
+// Показать тренеров для занятия
+document.getElementById('trainers-for-class-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const className = document.getElementById('class-name').value;
+
+    try {
+        const response = await fetch('/trainers_for_class', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ class_name: className })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('trainers-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Имя</th><th>Фамилия</th><th>Специализация</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.FirstName}</td><td>${row.LastName}</td><td>${row.Specialty}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки тренеров');
+    }
+});
+
+// Средняя цена абонемента
+async function getAveragePrice() {
+    try {
+        const response = await fetch('/avg_price');
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+        alert(`Средняя цена абонемента: ${data.average_price || 'Нет данных'}`);
+    } catch (err) {
+        alert('Ошибка загрузки данных');
+    }
+}
+
+// Поиск абонемента
+document.getElementById('search-membership-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('membership-name').value.trim();
+
+    try {
+        const response = await fetch('/search_type', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ search_name: name })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('memberships-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Название</th><th>Цена</th><th>Длительность (мес.)</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Name}</td><td>${row.Price}</td><td>${row.DurationMonths}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка поиска абонемента');
+    }
+});
+
+// Сортировка по цене
+async function orderByPrice() {
+    try {
+        const response = await fetch('/order_by_asc');
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('memberships-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Название</th><th>Цена</th><th>Длительность (мес.)</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Name}</td><td>${row.Price}</td><td>${row.DurationMonths}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка сортировки');
+    }
+}
+</script>
+{% endblock %}

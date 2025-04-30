@@ -1,0 +1,23 @@
+body {
+    background-color: #f4f4f4;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.table {
+    background-color: #fff;
+}
+
+.table tr.selected {
+    background-color: #d1e7dd;
+}
+
+.btn {
+    transition: background-color 0.2s;
+}

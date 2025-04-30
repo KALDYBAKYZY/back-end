@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="text-center mb-4">Вход в систему</h2>
+        <form id="login-form">
+            <div class="mb-3">
+                <label for="name" class="form-label">Имя</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="surname" class="form-label">Фамилия</label>
+                <input type="text" class="form-control" id="surname" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Войти</button>
+        </form>
+
+        <!-- Кнопка для перехода на страницу регистрации -->
+        <div class="text-center mt-3">
+            <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const surname = document.getElementById('surname').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, surname, password })
+        });
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+            if (data.role === 'admin') {
+                window.location.href = '/admin';
+            } else if (data.role === 'trainer') {
+                window.location.href = '/trainer';
+            } else if (data.role === 'client') {
+                window.location.href = '/client';
+            }
+        }
+    } catch (err) {
+        alert('Ошибка подключения к серверу');
+    }
+});
+</script>
+{% endblock %}

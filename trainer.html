@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Панель тренера</h2>
+
+<div class="row">
+    <!-- Левая панель: профиль, добавление заданий и тренировок -->
+    <div class="col-md-4">
+        <!-- Мой профиль -->
+        <div class="card mb-4">
+            <div class="card-header">Мой профиль</div>
+            <div class="card-body">
+                <button class="btn btn-primary" onclick="showTrainerProfile()">Показать</button>
+                <table id="trainer-profile-table" class="table table-bordered mt-3">
+                    <tbody>
+                        <tr><td>Имя</td><td><input type="text" id="trainer-firstname" class="form-control"></td></tr>
+                        <tr><td>Фамилия</td><td><input type="text" id="trainer-lastname" class="form-control"></td></tr>
+                        <tr><td>Специализация</td><td><input type="text" id="trainer-specialty" class="form-control"></td></tr>
+                        <tr><td>Телефон</td><td><input type="text" id="trainer-phonenumber" class="form-control"></td></tr>
+                        <tr><td>Дата рождения</td><td><input type="date" id="trainer-dob" class="form-control"></td></tr>
+                        <tr><td>Опыт</td><td><input type="text" id="trainer-experience" class="form-control"></td></tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-success mt-2" onclick="updateTrainerProfile()">Сохранить</button>
+            </div>
+        </div>
+
+        <!-- Добавить задание -->
+        <div class="card mb-4">
+            <div class="card-header">Добавить задание</div>
+            <div class="card-body">
+                <form id="add-assignment-form">
+                    <div class="mb-3">
+                        <label for="trainer-id" class="form-label">ID тренера</label>
+                        <input type="text" class="form-control" id="trainer-id" value="{{ trainer_id }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="client-id" class="form-label">ID клиента</label>
+                        <input type="text" class="form-control" id="client-id" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-text" class="form-label">Текст задания</label>
+                        <textarea class="form-control" id="task-text" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="due-date" class="form-label">Дата выполнения</label>
+                        <input type="date" class="form-control" id="due-date" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Добавить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Создать тренировку -->
+        <div class="card">
+            <div class="card-header">Создать тренировку</div>
+            <div class="card-body">
+                <form id="create-training-form">
+                    <div class="mb-3">
+                        <label for="training-trainer" class="form-label">Тренер</label>
+                        <input type="text" class="form-control" id="training-trainer" value="{{ trainer_id }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="training-date" class="form-label">Дата</label>
+                        <input type="date" class="form-control" id="training-date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="training-time" class="form-label">Время</label>
+                        <select class="form-select" id="training-time" required>
+                            <option value="">-- Выберите --</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <!-- Другие времена -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Локация</label>
+                        <select class="form-select" id="location" required>
+                            <option value="">-- Выберите --</option>
+                            <option value="1 - Зал 1">Зал 1</option>
+                            <option value="2 - Зал 2">Зал 2</option>
+                            <!-- Другие локации -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая панель: расписание и прогресс -->
+    <div class="col-md-8">
+        <!-- Расписание -->
+        <div class="card mb-4">
+            <div class="card-header">Расписание тренировок</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="schedule-trainer-id" class="form-label">ID тренера</label>
+                    <input type="text" class="form-control" id="schedule-trainer-id" value="{{ trainer_id }}" readonly>
+                </div>
+                <button class="btn btn-primary" onclick="showTrainerSchedule()">Показать</button>
+                <table id="schedule-table" class="table table-bordered mt-3">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Прогресс клиентов -->
+        <div class="card">
+            <div class="card-header">Прогресс клиентов</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="progress-trainer-id" class="form-label">ID тренера</label>
+                    <input type="text" class="form-control" id="progress-trainer-id" value="{{ trainer_id }}" readonly>
+                </div>
+                <button class="btn btn-primary" onclick="showProgress()">Показать</button>
+                <table id="progress-table" class="table table-bordered mt-3">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function showTrainerProfile() {
+    const trainerId = document.getElementById('trainer-id').value;
+    try {
+        const response = await fetch(`/trainer_profile/${trainerId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        // Заполнение полей ввода
+        document.getElementById('trainer-firstname').value = data.firstname || '';
+        document.getElementById('trainer-lastname').value = data.lastname || '';
+        document.getElementById('trainer-specialty').value = data.specialty || '';
+        document.getElementById('trainer-phonenumber').value = data.phonenumber || '';
+        document.getElementById('trainer-dob').value = data.dob || '';
+        document.getElementById('trainer-experience').value = data.experience || '';
+    } catch (err) {
+        alert('Ошибка загрузки профиля');
+    }
+}
+
+async function updateTrainerProfile() {
+    const trainerId = document.getElementById('trainer-id').value;
+
+    const payload = {
+        firstname: document.getElementById('trainer-firstname').value,
+        lastname: document.getElementById('trainer-lastname').value,
+        specialty: document.getElementById('trainer-specialty').value,
+        phonenumber: document.getElementById('trainer-phonenumber').value,
+        dob: document.getElementById('trainer-dob').value,
+        experience: document.getElementById('trainer-experience').value
+    };
+
+    try {
+        const response = await fetch(`/trainer_profile/${trainerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.error) return alert(result.error);
+        alert('Профиль обновлён!');
+    } catch (err) {
+        alert('Ошибка при обновлении профиля');
+    }
+}
+
+async function showTrainerSchedule() {
+    const trainerId = document.getElementById('schedule-trainer-id').value;
+    try {
+        const response = await fetch('/show_trainer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trainer_id: trainerId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('schedule-table');
+        table.querySelector('thead').innerHTML = '<tr><th>ID</th><th>Дата</th><th>Время</th><th>Клиент</th><th>Локация</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.ID}</td><td>${row.Дата}</td><td>${row.Время}</td><td>${row.Клиент}</td><td>${row.Локация}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки расписания');
+    }
+}
+
+async function showProgress() {
+    const trainerId = document.getElementById('progress-trainer-id').value;
+    try {
+        const response = await fetch('/show_progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trainer_id: trainerId })
+        });
+        const data = await response.json();
+        if (data.error) return alert(data.error);
+
+        const table = document.getElementById('progress-table');
+        table.querySelector('thead').innerHTML = '<tr><th>Клиент</th><th>Задание</th><th>Дата</th><th>Статус</th></tr>';
+        table.querySelector('tbody').innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.Клиент}</td><td>${row.Задание}</td><td>${row.Дата}</td><td>${row.Статус}</td>`;
+            table.querySelector('tbody').appendChild(tr);
+        });
+    } catch (err) {
+        alert('Ошибка загрузки прогресса');
+    }
+}
+
+document.getElementById('add-assignment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const trainerId = document.getElementById('trainer-id').value;
+    const clientId = document.getElementById('client-id').value.trim();
+    const taskText = document.getElementById('task-text').value.trim();
+    const dueDate = document.getElementById('due-date').value;
+
+    try {
+        const response = await fetch('/add_assignment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                trainer_id: trainerId,
+                client_id: clientId,
+                task_text: taskText,
+                due_date: dueDate
+            })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) document.getElementById('add-assignment-form').reset();
+    } catch (err) {
+        alert('Ошибка добавления задания');
+    }
+});
+
+document.getElementById('create-training-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const trainer = document.getElementById('training-trainer').value;
+    const date = document.getElementById('training-date').value;
+    const time = document.getElementById('training-time').value;
+    const location = document.getElementById('location').value;
+
+    try {
+        const response = await fetch('/save_training', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                trainer,
+                date,
+                time,
+                location
+            })
+        });
+        const data = await response.json();
+        alert(data.message || data.error);
+        if (!data.error) document.getElementById('create-training-form').reset();
+    } catch (err) {
+        alert('Ошибка создания тренировки');
+    }
+});
+</script>
+{% endblock %}
