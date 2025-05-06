@@ -1,58 +1,53 @@
-# Fitness Center Management
+#  Fitness Center Management
 
-## Описание проекта
+##  Project Description
 
-Этот проект представляет собой веб-приложение для управления фитнес-центром. В проекте реализованы роли: администратор, тренер и клиент.
+This is a web application for managing a fitness center, supporting roles such as **administrator**, **trainer**, and **client**.
 
-## Функции проекта
+##  Features
 
-- **Регистрация пользователей:** возможность регистрации как тренера или клиента.
-- **Вход в систему:** пользователи могут войти с помощью своей учетной записи.
-- **Управление тренерами:** администраторы могут добавлять, редактировать и удалять тренеров.
-- **Управление клиентами:** администраторы могут добавлять, редактировать и удалять клиентов.
-- **Бронирование тренировок:** клиенты могут записываться на тренировки.
-- **Просмотр расписания:** тренеры могут видеть свое расписание тренировок, а клиенты — доступные слоты для бронирования.
-- **Редактирование личного профиля:** тренеры/клиенты могут видят свой личный профиль и редактировать его.
-- **Прогресс клиентов:** тренера могут видят прогресс своих клиентов.
-- **Создание тренировок:** тренера создают свои тренировки.
-- **Создание задании:** тренера создают индивидуальные задания для клиентов.
-- **Расписание тренировок:** тренера/клиенты могут видят свое расписание тренировок.
-- **Добавлять личные заметки:** клиенты могут писать себе заметки.
-- **Список заданий:** клиенты могут видеть список заданий, которые они должны выполнить и отмечают если закончили.
-- **Достижения:** клиенты могут видеть свои достижения.
-- **Запись на тренировку:** клиенты могут записаться на свободную тренировку, выбирая удобное время.
+- **User Registration:** Register as a trainer or client.  
+- **Login System:** Log in with your credentials.  
+- **Trainer Management (Admin):** Add, edit, and delete trainers.  
+- **Client Management (Admin):** Add, edit, and delete clients.  
+- **Training Booking (Client):** Book training sessions.  
+- **Schedule Viewing:**
+  - Trainers can view their training schedule.
+  - Clients can view available slots.
+- **Profile Management:** View and edit personal profiles.  
+- **Client Progress (Trainer):** View client progress.  
+- **Workout Creation (Trainer):** Create training sessions.  
+- **Assignment Creation (Trainer):** Assign personalized tasks to clients.  
+- **Training Schedule:** View training schedule (Trainer/Client).  
+- **Personal Notes (Client):** Write and manage personal notes.  
+- **Assignment Tracking (Client):** View and mark assignments as completed.  
+- **Achievements (Client):** View personal achievements.  
+- **Training Enrollment (Client):** Book available sessions at convenient times.
 
-## Стек технологий
-- **Back-end:** Python, Flask
-- **База данных:** PostgreSQL
-- **Front-end:** HTML, CSS, JavaScript (по необходимости)
-- **Библиотеки:** SQLAlchemy, bcrypt, Flask-SQLAlchemy, Flask-WTF, Jinja2
-- **Системы контроля версий:** Git, GitHub
+## Tech Stack
 
-## Шаги действий
-1.Создание базы данных:
-Установите PostgreSQL и создайте базу данных (например, fitness_center_db).
-Создайте таблицы с помощью SQL-скриптов или ORM (SQLAlchemy).
-Заполните таблицы начальными данными (например, роли пользователей, примеры тренеров и клиентов).
+- **Back-end:** Python, Flask  
+- **Database:** PostgreSQL  
+- **Front-end:** HTML, CSS, JavaScript (as needed)  
+- **Libraries:**  
+  - SQLAlchemy  
+  - bcrypt  
+  - Flask-SQLAlchemy  
+  - Flask-WTF  
+  - Jinja2  
+- **Version Control:** Git, GitHub
 
-2. Настройка проекта
-Откройте проектную папку.
-В файле app.py подключитесь к базе данных, указав строку подключения:
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/fitness_center_db'
-Запуск приложения:
-Убедитесь, что все зависимости установлены
+## Getting Started
 
-3. Запустите сервер:
-python app.py
-В терминале появится ссылка (например, http://127.0.0.1:5000/), перейдите по ней в браузере.
+### 1. Create the Database
 
-4. Регистрация и вход:
-Перейдите на страницу регистрации.
-Создайте учетную запись как клиент или тренер.
-Войдите в систему под своей ролью и начните работу.
+- Install PostgreSQL and create a database (e.g., `fitness_center_db`).  
+- Create tables using SQL scripts or with SQLAlchemy models.  
+- Add initial data (e.g., roles, example users).
 
-5.Тестирование функционала:
-Попробуйте создать тренировку как тренер.
-Запишитесь на тренировку как клиент.
-Добавьте личную заметку или отметьте выполненное задание.
-Просмотрите свои достижения.
+### 2. Configure the Project
+
+- Open the project folder.  
+- In `app.py`, configure the database URI:
+  ```python
+  app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/fitness_center_db'
